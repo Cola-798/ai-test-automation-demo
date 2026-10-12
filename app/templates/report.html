@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ result.case_id }} 测试报告</title>
+  <style>
+    :root{--bg:#07111f;--card:#102139;--line:#29405e;--text:#eef6ff;--muted:#9cb0c8;--ok:#38d1b9;--bad:#ff7181;--blue:#5b91f5}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei",system-ui,sans-serif}.wrap{width:min(1100px,92vw);margin:32px auto 64px}.hero,.card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,#132943,#0c192b);box-shadow:0 18px 45px #0005}.hero{padding:28px}.hero h1{margin:8px 0;font-size:30px}.eyebrow{color:#70d9cd;letter-spacing:.12em;font-size:11px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.card{padding:18px}.label,small{color:var(--muted);font-size:12px}.value{display:block;margin-top:8px;font-size:18px}.ok{color:var(--ok)}.bad{color:var(--bad)}h2{font-size:18px;margin:0 0 15px}.step{display:grid;grid-template-columns:90px 1fr auto;gap:12px;padding:13px 0;border-top:1px solid var(--line)}.step:first-of-type{border-top:0}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#203c60;color:#bcd5fa;font-size:11px}.evidence{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.evidence a{color:#a9c9ff;text-decoration:none}.evidence img{width:100%;border-radius:10px;border:1px solid var(--line);display:block;margin-bottom:7px}details{margin-top:16px}.technical{white-space:pre-wrap;word-break:break-word;color:#c4d4e8;font:12px/1.6 Consolas,monospace}@media(max-width:760px){.summary{grid-template-columns:1fr 1fr}.step{grid-template-columns:1fr}}
+    :root{color-scheme:light;--bg:#f7f8fb;--card:#fff;--line:#e4e7ef;--text:#202636;--muted:#637086;--ok:#16775d;--bad:#b63848;--blue:#505dcc}
+    body{line-height:1.65}.wrap{width:min(1100px,92vw);margin:40px auto 64px}.hero,.card{background:#fff;box-shadow:0 3px 14px #24345605;border-radius:10px}.hero{border-top:3px solid var(--blue)}.hero h1{font-size:26px;font-weight:600;overflow-wrap:anywhere}.eyebrow{color:var(--blue);font-size:10px;letter-spacing:1.8px}.value{font-size:16px;overflow-wrap:anywhere}.pill{background:#f0f2fa;color:#485576;border-radius:5px;align-self:start;width:max-content}.step{grid-template-columns:64px minmax(0,1fr) auto}.step small{overflow-wrap:anywhere}.evidence a{color:var(--blue);font-size:12px;transition:transform .18s}.evidence a:hover{transform:translateY(-3px)}.evidence img{max-height:360px;object-fit:contain;background:#f4f5fa}.technical{color:#43516d;background:#f6f7fb;border-radius:8px;padding:16px;overflow-wrap:anywhere}summary{cursor:pointer;padding:12px;color:var(--blue);font-size:13px;border:1px solid var(--line);border-radius:7px}a:focus-visible,summary:focus-visible{outline:3px solid #737ee0;outline-offset:3px}@media(max-width:760px){.step{grid-template-columns:1fr}.hero{padding:20px}.hero h1{font-size:21px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body><main class="wrap">
+  <section class="hero"><div class="eyebrow">AI DRIVEN APP TEST REPORT</div><h1>{{ result.case_id }} · {{ result.case_title }}</h1><p class="{{ 'ok' if result.status == 'passed' else 'bad' }}">{{ result.message }}</p></section>
+  <section class="summary">
+    <article class="card"><span class="label">测试结果</span><strong class="value {{ 'ok' if result.status == 'passed' else 'bad' }}">{{ '通过' if result.status == 'passed' else '失败' }}</strong></article>
+    <article class="card"><span class="label">结果分类</span><strong class="value">{{ result.classification_label or result.classification }}</strong></article>
+    <article class="card"><span class="label">执行设备</span><strong class="value">{{ result.device.platform }} · {{ result.device.name }}</strong></article>
+    <article class="card"><span class="label">AI 编译</span><strong class="value">{{ result.compiler.model or result.compiler.mode }}</strong></article>
+  </section>
+  {% if result.repair_progress %}
+  <section class="card"><h2>实际修复效果</h2><p>{{ result.repair_progress.summary }}</p>
+    <p>已执行 {{ result.repair_progress.executed_steps }} 步，通过 {{ result.repair_progress.passed_steps }} 步；采集 {{ result.repair_progress.screenshots }} 张截图。</p>
+    <ul>{% for item in result.repair_progress.resolved %}<li>此前失败、本次通过：{{ item }}</li>{% endfor %}
+    {% for item in result.repair_progress.new_passes %}<li>本次新增验证通过：{{ item }}</li>{% endfor %}
+    {% for item in result.repair_progress.remaining %}<li>仍需解决：{{ item }}</li>{% endfor %}
+    {% for item in result.repair_progress.regressions %}<li>此前通过、本次失败：{{ item }}</li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+  <section class="card"><h2>执行步骤</h2>{% for step in result.steps %}<div class="step"><span class="pill">{{ '通过' if step.status == 'passed' else '失败' }}</span><div><strong>{{ step.title }}</strong><br><small>{{ step.step_id }} · {{ step.message or '执行完成' }}</small></div><small>{{ (step.duration_seconds|string + 's') if step.duration_seconds is number else '未记录耗时' }}</small></div>{% endfor %}</section>
+  <section class="card" style="margin-top:16px"><h2>验收结果</h2>{% for oracle in result.oracles %}<div class="step"><span class="pill">{{ '通过' if oracle.passed else '失败' }}</span><div><strong>{{ oracle.oracle_id }}</strong><br><small>{{ oracle.message }}</small></div></div>{% endfor %}</section>
+  {% if result.state_context and result.state_context.mode != 'legacy_unmanaged' %}<section class="card" style="margin-top:16px"><h2>前置状态</h2><div class="technical">模式：{{ result.state_context.mode }}
+{% for item in result.state_context.requirements %}{{ item.domain }}：{{ item.status }}{% if item.prepared %}（本次已准备）{% endif %}
+{% endfor %}</div></section>{% endif %}
+  {% if result.test_parameters %}<section class="card" style="margin-top:16px"><h2>本次测试数据参数</h2>{% for item in result.test_parameters %}<div class="step"><span class="pill">{{ item.source }}</span><div><strong>{{ item.name }}</strong><br><small>本次实际值：{{ item.value }}{% if item.offset_days is not none %} · 日期偏移 {{ item.offset_days }} 天{% endif %}</small></div></div>{% endfor %}</section>{% endif %}
+  <section class="card" style="margin-top:16px"><h2>执行证据</h2><div class="evidence">{% for event in result.events %}{% if event.screenshot %}<a href="{{ event.screenshot }}"><img src="{{ event.screenshot }}" alt="{{ event.phase }} {{ event.step_id or event.oracle_id }} 截图"><span>{{ event.phase }} · {{ event.step_id or event.oracle_id }} · {{ event.event_id }}</span></a>{% endif %}{% endfor %}</div>
+    <details><summary>查看完整技术信息</summary><div class="technical">计划：{{ plan.model_dump_json(indent=2) }}
+
+事件：{{ result.events }}</div></details>
+  </section>
+</main></body></html>

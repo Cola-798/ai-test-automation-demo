@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ batch.name }} · {{ '单轮实验报告' if batch.category == 'experiment' else '稳定性验证报告' }}</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6fa;color:#182136;font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}.page{max-width:1180px;margin:0 auto;padding:42px 24px 70px}.hero,.panel{background:#fff;border:1px solid #e0e4ed;border-radius:14px;box-shadow:0 7px 24px #2230540b}.hero{padding:30px}.hero p{color:#667187}.eyebrow{margin:0;color:#6571c4;font-size:11px;letter-spacing:1.5px}.hero h1{margin:8px 0;font-size:28px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}.metric{padding:18px}.metric span,.metric small{display:block;color:#727c90;font-size:11px}.metric strong{display:block;margin:8px 0;font-size:22px}.panel{padding:24px;margin-top:18px}table{width:100%;border-collapse:collapse}th,td{padding:12px 10px;border-bottom:1px solid #e7eaf0;text-align:left;font-size:12px}th{color:#687286;font-weight:600;background:#f8f9fc}td small{display:block;color:#7b8496}.ok{color:#197052}.bad{color:#ae3548}.note{padding:14px 16px;background:#f1f3fc;border-left:3px solid #6671c9;color:#4f5970}.actions{margin-top:18px}.actions a{color:#5260bd;text-decoration:none}@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.page{padding:20px 12px}.panel{overflow:auto}}
+</style></head><body><main class="page">
+<section class="hero"><p class="eyebrow">{{ 'EXPERIMENTAL REPLAY REPORT' if batch.category == 'experiment' else 'STABILITY VALIDATION REPORT' }}</p><h1>{{ batch.name }}</h1><p>Android · {{ '单轮实验（不计入稳定性）' if batch.category == 'experiment' else 'AI 修复专项' if batch.category == 'repair' else '正常稳定性' }} · {{ batch.plan_record_ids|length }} 条计划 × {{ batch.repetitions }} 次 · 状态：{{ batch.status }}</p></section>
+<section class="grid">
+  <article class="panel metric"><span>自动化完成率</span><strong>{{ batch.metrics.automation_completion_rate }}%</strong><small>产品失败仍属于自动化完成</small></article>
+  <article class="panel metric"><span>验收通过率</span><strong>{{ batch.metrics.product_pass_rate }}%</strong><small>{{ batch.metrics.product_passes }} 通过 / {{ batch.metrics.acceptance_mismatches or batch.metrics.product_failures }} 验收不一致</small></article>
+  <article class="panel metric"><span>平均耗时</span><strong>{{ batch.metrics.average_duration_seconds }}s</strong><small>每次真机执行</small></article>
+  <article class="panel metric"><span>确定性动作</span><strong>{{ batch.metrics.deterministic_action_rate }}%</strong><small>AI 只处理异常点</small></article>
+  <article class="panel metric"><span>定位失败</span><strong>{{ batch.metrics.locator_failures }}</strong><small>AI 介入 {{ batch.metrics.ai_interventions }} 次</small></article>
+  <article class="panel metric"><span>AI 修复成功率</span><strong>{{ batch.metrics.ai_repair_success_rate }}%</strong><small>{{ batch.metrics.ai_repairs_succeeded }} 次成功</small></article>
+  <article class="panel metric"><span>自动化失败</span><strong>{{ batch.metrics.automation_failures }}</strong><small>定位或执行器问题</small></article>
+  <article class="panel metric"><span>环境异常</span><strong>{{ batch.metrics.environment_failures }}</strong><small>设备、Appium 或连接</small></article>
+</section>
+{% if batch.efficiency.configured %}<section class="grid">
+  <article class="panel metric"><span>人工基线总投入</span><strong>{{ batch.efficiency.manual_minutes_total }} 分钟</strong><small>同范围、同次数</small></article>
+  <article class="panel metric"><span>自动化人工投入</span><strong>{{ batch.efficiency.automated_human_minutes_total }} 分钟</strong><small>不等于机器运行时间</small></article>
+  <article class="panel metric"><span>节省人工时间</span><strong>{{ batch.efficiency.human_minutes_saved }} 分钟</strong><small>人工基线减自动化人工投入</small></article>
+  <article class="panel metric"><span>人工时间节省率</span><strong>{{ batch.efficiency.human_time_saving_rate }}%</strong><small>实际提效指标</small></article>
+</section>{% endif %}
+<section class="panel"><h2>结论口径</h2><p class="note">自动化完成率表示系统成功执行到产品验收阶段；产品通过率表示 APP 是否满足验收标准。产品功能失败不会被计为自动化不稳定。</p></section>
+<section class="panel"><h2>执行明细</h2><table><thead><tr><th>#</th><th>用例</th><th>轮次</th><th>状态</th><th>结果</th><th>耗时</th><th>证据</th></tr></thead><tbody>{% for item in batch.attempts %}<tr><td>{{ item.sequence_no }}</td><td><b>{{ item.case_id }}</b><small>{{ item.case_title }}</small></td><td>第 {{ item.iteration }} 次</td><td>{{ item.status }}</td><td>{{ item.classification or '—' }}<small>{{ item.message }}</small>{% for retry in item.environment_retry_history %}<small>环境异常补跑记录：{{ retry.classification }} · {{ retry.message }}{% if retry.run_id %} · <a href="/dashboard?run={{ retry.run_id }}">查看原异常运行</a>{% endif %}</small>{% endfor %}</td><td>{{ item.duration_seconds if item.duration_seconds is not none else '—' }}s</td><td>{% if item.run_id %}<a href="/dashboard?run={{ item.run_id }}">查看运行</a>{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table><p class="actions"><a href="{{ batch.json_url }}">下载结构化 JSON</a></p></section>
+</main></body></html>

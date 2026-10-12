@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>信息采集 · AI 自动化测试平台</title><link rel="stylesheet" href="/static/app.css"><link rel="stylesheet" href="/static/collection.css"></head>
+<body>
+<svg class="collection-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="collection-icon-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 19h2"/></symbol>
+<symbol id="collection-icon-cases" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m7 8 1 1 2-2M12 8h5m-10 5 1 1 2-2M12 13h5M7 18h10"/></symbol>
+<symbol id="collection-icon-scope" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-3 5-5 3 3-5 5-3Z"/></symbol>
+<symbol id="collection-icon-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="collection-icon-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
+<symbol id="collection-icon-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+</defs></svg>
+{% set active_page = 'collection' %}{% include '_navigation.html' %}
+<main id="main-content" class="shell collection-workbench" data-read-only="{{ 'true' if read_only else 'false' }}">
+  <header class="collection-heading"><div><h1>信息采集</h1><p>按 App 查找页面与控件，复用已有资料，再补齐测试所需的信息。</p></div><span class="badge muted">页面与定位资料</span></header>
+  <div id="collection-notice" class="notice" role="status" aria-live="polite" hidden></div>
+  <section class="panel collection-browser" aria-label="App 资料浏览">
+    <div class="collection-toolbar"><label for="collection-app-picker">应用<select id="collection-app-picker"></select></label>
+      <div><strong id="collection-app">正在加载资料…</strong><p id="collection-browse-label"></p><p id="collection-execute-label"></p></div></div>
+    <div class="collection-browser-grid">
+      <aside class="collection-index" aria-label="资料列表">
+        <div class="collection-tabs" role="group" aria-label="资料类型"><button type="button" data-library-tab="pages" aria-pressed="true">页面信息</button><button type="button" data-library-tab="controls" aria-pressed="false">控件定位表</button><button type="button" data-library-tab="cases" aria-pressed="false">用例准备</button></div>
+        <label class="sr-only" for="collection-search">搜索页面或控件</label><input id="collection-search" type="search" placeholder="搜索名称、描述或定位内容">
+        <label class="sr-only" for="collection-filter">筛选资料</label><select id="collection-filter"><option value="all">全部页面</option><option value="both">截图与结构齐全</option><option value="image">仅截图</option><option value="xml">仅页面结构</option></select>
+        <p id="collection-result-count" class="collection-subtle" role="status" aria-live="polite"></p><div id="collection-library-list" class="collection-library-list"></div>
+      </aside>
+      <section class="collection-viewer" aria-label="选中资料预览"><div class="collection-viewer-heading"><div><h2 id="collection-preview-title">选择一份资料</h2><p id="collection-existing-state"></p></div><div id="collection-preview-links"></div></div>
+        <div id="collection-existing-preview" class="collection-preview"></div>
+      </section>
+    </div>
+  </section>
+  <details class="panel collection-disclosure"><summary><svg class="collection-section-icon" aria-hidden="true"><use href="#collection-icon-scope"/></svg><span class="collection-summary-title">补采页面与准备前置条件</span><span class="collection-summary-hint">连接手机后，AI 在当前服务所属 App 中探索</span><svg class="collection-chevron" aria-hidden="true"><use href="#collection-icon-chevron"/></svg></summary>
+    <p id="collection-action-scope" class="collection-subtle"></p>
+    <form id="collection-form" class="collection-form">
+      <label class="collection-full collection-device-field" for="collection-device"><span class="collection-field-title"><svg aria-hidden="true"><use href="#collection-icon-phone"/></svg>已连接的 Android 手机</span><select id="collection-device" required></select><small>连接并允许 USB 调试后选择设备。没有显示时，点击右侧刷新。</small><button class="button secondary" id="collection-device-refresh" type="button">刷新设备</button></label>
+      <label class="collection-paired-field" for="collection-cases"><span class="collection-field-title"><svg aria-hidden="true"><use href="#collection-icon-cases"/></svg>相关用例<span class="collection-field-hint">最多 20 条</span></span><select id="collection-cases" multiple size="6"></select><small>按住 Ctrl 或 Shift 可多选；未选用例时，请填写右侧范围。</small></label>
+      <label class="collection-paired-field" for="collection-scope"><span class="collection-field-title"><svg aria-hidden="true"><use href="#collection-icon-scope"/></svg>补采范围<span class="collection-field-hint">可补充说明</span></span><textarea id="collection-scope" maxlength="1000" rows="6" placeholder="例如：首页、我的、创建饮食记录入口。&#10;已选择用例时，也可补充希望采集的页面或流程。"></textarea><small>只补充采集范围，不改变原用例的验收要求。</small></label>
+      <label class="collection-check collection-full"><input type="checkbox" id="collection-create">允许准备普通测试数据，使用本轮唯一名称</label>
+      <div class="collection-form-footer collection-full"><p class="collection-safety"><svg aria-hidden="true"><use href="#collection-icon-shield"/></svg><span>购买、注销、退出账号和外部分享默认不执行。<br>采集成果仍需在正式运行前核验。</span></p><button class="button primary" type="submit" id="collection-start" {% if read_only %}disabled{% endif %}><svg aria-hidden="true"><use href="#collection-icon-play"/></svg><span id="collection-start-label">核验并补齐前置条件</span></button></div>
+      {% if read_only %}<p>当前为只读页面，可查看成果，不能操作手机。</p>{% endif %}
+    </form>
+  </details>
+  <details class="panel collection-disclosure"><summary><svg class="collection-section-icon" aria-hidden="true"><use href="#collection-icon-cases"/></svg><span class="collection-summary-title">采集任务与准备结果</span><span class="collection-summary-hint">查看当前服务任务的进度、路径及未完成条件</span><svg class="collection-chevron" aria-hidden="true"><use href="#collection-icon-chevron"/></svg></summary>
+    <div class="collection-task-toolbar"><select id="collection-tasks" aria-label="采集任务"></select><button class="button ghost" id="collection-refresh" type="button">刷新</button><button class="button secondary" id="collection-stop" type="button" disabled>停止</button><button class="button primary" id="collection-resume" type="button" disabled>继续采集</button></div>
+    <p id="collection-status" role="status" aria-live="polite">开始采集后，这里会保存任务进度和真实证据。</p>
+    <div class="collection-task-grid"><section><h3>前置条件与缺口</h3><div id="collection-readiness"></div><ul id="collection-missing"></ul></section><section><h3>控件、路径与对象</h3><div id="collection-controls"></div><div id="collection-routes"></div><div id="collection-objects"></div></section></div>
+    <h3>任务页面证据</h3><div id="collection-pages"></div>
+  </details>
+</main><script src="/static/collection.js" defer></script></body></html>

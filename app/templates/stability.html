@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>稳定性验证 · AI 自动化测试平台</title>
+  <link rel="stylesheet" href="/static/app.css?v=demo-v1">
+</head>
+<body>
+  {% set active_page = 'stability' %}{% include '_navigation.html' %}
+  <main class="shell stability-workbench" id="main-content">
+    <section class="hero">
+      <div><p class="eyebrow">STABILITY VALIDATION</p><h1>让“跑通一次”，变成可量化的稳定性。</h1><p>连续重放已经确认的计划，分别衡量自动化完成率、产品通过率、耗时和 AI 介入情况。</p></div>
+      <div id="stability-summary" class="flow-chip">正在读取批次</div>
+    </section>
+    <div id="stability-notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="stability-overview" aria-labelledby="stability-overview-title">
+      <div class="stability-overview-head"><div><h2 id="stability-overview-title">稳定性验证总览</h2><p>首轮通过后进入 Replay，按每条用例设定的轮次汇总正常回归与专项验证。</p></div><a id="scope-export-link" class="button ghost" href="/api/stability/cases/export.csv?scope=validatable">导出用例清单</a></div>
+      <div class="stability-scope-summary" aria-label="稳定性验证指标">
+        <button class="scope-card" type="button" data-scope="validatable" aria-pressed="false"><span class="scope-icon blue" aria-hidden="true">🗃️</span><div><small>可验证用例</small><strong id="scope-validatable-cases" class="metric-loading" aria-busy="true">—</strong><span>首轮执行已通过</span></div><b aria-hidden="true">›</b></button>
+        <button class="scope-card" type="button" data-scope="completed" aria-pressed="false"><span class="scope-icon teal" aria-hidden="true">🔁</span><div><small>已完成稳定性验证</small><strong id="scope-completed-cases" class="metric-loading" aria-busy="true">—</strong><span>已跑满设定轮次</span></div><b aria-hidden="true">›</b></button>
+        <button class="scope-card" type="button" data-scope="stable" aria-pressed="false"><span class="scope-icon green" aria-hidden="true">🛡️</span><div><small>稳定通过用例</small><strong id="scope-stable-cases" class="metric-loading" aria-busy="true">—</strong><span>设定轮次均验收通过</span></div><b aria-hidden="true">›</b></button>
+        <button class="scope-card" type="button" data-scope="issues" aria-pressed="false"><span class="scope-icon rose" aria-hidden="true">🐞</span><div><small>验证未完成 / 问题用例</small><strong id="scope-issue-cases" class="metric-loading" aria-busy="true">—</strong><span>待开始、未跑满或存在失败</span></div><b aria-hidden="true">›</b></button>
+        <button class="scope-card rate" type="button" data-scope="pass_rate" data-list-scope="stable" aria-pressed="false"><span class="scope-icon violet" aria-hidden="true">📈</span><div><small>稳定通过率</small><strong id="scope-pass-rate" class="metric-loading" aria-busy="true">—</strong><span id="scope-pass-rate-copy">稳定通过 / 已完成</span></div><b aria-hidden="true">›</b></button>
+      </div>
+    </section>
+
+    <section id="stability-case-list" class="panel stability-case-panel" aria-labelledby="scope-list-title" aria-live="polite" hidden>
+      <div class="panel-heading"><div><span class="section-icon blue" aria-hidden="true">📋</span><h3 id="scope-list-title">用例清单</h3></div><span id="scope-list-count" class="badge muted">0 条</span></div>
+      <div class="stability-case-table-wrap"><table class="stability-case-table"><thead><tr><th>用例</th><th>状态</th><th>Replay</th><th>问题分类</th><th>最新批次</th><th>操作</th></tr></thead><tbody id="scope-case-table-body"></tbody></table></div>
+    </section>
+
+    <section class="stability-layout">
+      <form id="batch-form" class="panel batch-builder">
+        <div class="panel-heading"><div><span class="step-number">01</span><h3>创建验证批次</h3></div><span class="badge muted">单设备串行</span></div>
+        <label class="field-label">批次名称<input name="name" value="冒烟稳定性验证" maxlength="120" required></label>
+        <div class="batch-field-grid three">
+          <label class="field-label">执行平台<select name="platform"><option value="android">Android</option></select></label>
+          <label class="field-label">测试设备<select name="device_udid" required><option value="">请选择设备</option></select></label>
+          <label class="field-label">验证类型<select name="category"><option value="normal">正常稳定性</option><option value="repair">AI 修复专项</option></select></label>
+          <label class="field-label">每条执行次数<input name="repetitions" type="number" min="1" max="20" placeholder="按验证方案填写" required></label>
+        </div>
+        <div class="sample-note" id="category-note"><strong>正常稳定性</strong><span>用于衡量日常回归表现，受控 AI 修复用例不要混入本组。</span></div>
+        <fieldset class="plan-choice"><legend>选择已确认计划</legend><div class="plan-choice-toolbar"><span id="plan-selection-count">已选 0 条</span><span><button id="select-all-plans" type="button">一键全选</button><button id="clear-plan-selection" type="button">一键取消</button></span></div><div id="stability-plan-list" class="plan-choice-list"><p class="muted-copy">正在读取计划…</p></div></fieldset>
+        <div class="batch-total"><span>预计执行</span><strong id="attempt-total">0 次</strong></div>
+        <button class="button primary" type="submit">创建验证批次</button>
+      </form>
+
+      <section class="panel batch-overview" aria-labelledby="batch-overview-title">
+        <div class="batch-overview-head">
+          <div><p class="eyebrow">CURRENT BATCH</p><h2 id="batch-overview-title">尚未选择批次</h2><p id="batch-meta">创建批次后，可在这里启动并观察执行进度。</p></div>
+          <label class="verified-case-picker" for="batch-picker"><span>历史执行记录</span>
+            <input id="batch-case-search" type="search" placeholder="输入编号或内容筛选" autocomplete="off">
+            <select id="batch-picker"><option value="">暂无验证记录</option></select>
+          </label>
+        </div>
+        <div class="batch-command-bar">
+          <span id="batch-status" class="badge muted">未创建</span>
+          <div class="progress-track" aria-label="批次执行进度"><i id="batch-progress"></i></div>
+          <strong id="batch-progress-label">0 / 0</strong>
+          <button id="start-batch-button" class="button primary" type="button" disabled>开始执行</button>
+          <button id="stop-batch-button" class="button ghost" type="button" hidden>安全停止</button>
+          <a id="batch-report-link" class="button secondary" href="#" hidden>中文报告</a>
+          <a id="batch-json-link" class="button ghost" href="#" hidden>导出 JSON</a>
+        </div>
+        <div class="stability-metrics">
+          <article><span class="metric-icon blue" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4L19 6.5"/></svg></span><span class="metric-title">自动化完成率</span><strong id="metric-automation">—</strong><small>到达产品验收阶段</small></article>
+          <article><span class="metric-icon teal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6z"/><path d="M8.5 12l2.2 2.2 4.8-5"/></svg></span><span class="metric-title">验收通过率</span><strong id="metric-product">—</strong><small>与自动化稳定性分开统计</small></article>
+          <article><span class="metric-icon amber" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span><span class="metric-title">平均耗时</span><strong id="metric-duration">—</strong><small>单次真机执行</small></article>
+          <article><span class="metric-icon violet" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h5l2 3h7M5 18h5l2-3h7"/><circle cx="5" cy="6" r="1"/><circle cx="5" cy="18" r="1"/></svg></span><span class="metric-title">确定性动作</span><strong id="metric-deterministic">—</strong><small>未依赖 AI 的步骤</small></article>
+          <article><span class="metric-icon rose" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span class="metric-title">定位失败</span><strong id="metric-locator">—</strong><small>来自真实运行事件</small></article>
+          <article><span class="metric-icon cyan" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.4 4.1 4.1 1.4-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z"/></svg></span><span class="metric-title">AI 修复成功率</span><strong id="metric-ai">—</strong><small id="metric-ai-count">0 次介入</small></article>
+          <article><span class="metric-icon red" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 9v5M12 17h.01"/></svg></span><span class="metric-title">自动化失败</span><strong id="metric-automation-fail">—</strong><small>执行器或定位问题</small></article>
+          <article><span class="metric-icon slate" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 7h6M10 17h4"/></svg></span><span class="metric-title">环境异常</span><strong id="metric-environment">—</strong><small>设备、Appium或连接</small></article>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel attempt-panel">
+      <div class="panel-heading"><div><span class="step-number">02</span><span class="section-icon violet" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><h3>执行明细</h3></div><span id="attempt-count" class="badge muted">0 条</span></div>
+      <div class="attempt-table-wrap"><table class="attempt-table"><thead><tr><th>序号</th><th>用例</th><th>轮次</th><th>状态</th><th>结果分类</th><th>耗时</th><th>证据</th></tr></thead><tbody id="attempt-table-body"><tr><td colspan="7" class="table-empty">尚未创建验证批次</td></tr></tbody></table></div>
+    </section>
+  </main>
+<script src="/static/stability.js?v=demo-v1"></script>
+</body>
+</html>

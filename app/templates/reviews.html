@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>结果复核中心 · AI 自动化测试平台</title>
+  <link rel="stylesheet" href="/static/app.css?v=demo-v1">
+</head>
+<body>
+  {% set active_page = 'reviews' %}{% include '_navigation.html' %}
+  <main class="shell review-workbench" id="main-content">
+    <section class="hero review-hero">
+      <div><p class="eyebrow">RESULT REVIEW CENTER</p><h1>只复核当前仍未通过的结果。</h1><p>每台设备分别取最新执行结果；最新已通过的用例自动移出，旧失败可在“历史记录”查看。</p></div>
+      <span id="review-summary" class="flow-chip">正在同步最新结果</span>
+    </section>
+    <div id="review-notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="review-metrics" aria-label="复核指标">
+      <button class="review-metric-card" type="button" data-review-scope="pending" aria-pressed="false"><span class="metric-icon amber" aria-hidden="true">⏳</span><div><small>待复核</small><strong id="review-metric-pending" class="metric-loading" aria-busy="true">—</strong></div><b aria-hidden="true">›</b></button>
+      <button class="review-metric-card" type="button" data-review-scope="execution" aria-pressed="false"><span class="metric-icon rose" aria-hidden="true">!</span><div><small>执行未通过</small><strong id="review-metric-execution" class="metric-loading" aria-busy="true">—</strong></div><b aria-hidden="true">›</b></button>
+      <button class="review-metric-card" type="button" data-review-scope="stability" aria-pressed="false"><span class="metric-icon violet" aria-hidden="true">↻</span><div><small>稳定性未通过</small><strong id="review-metric-stability" class="metric-loading" aria-busy="true">—</strong></div><b aria-hidden="true">›</b></button>
+    </section>
+
+    <section class="review-filter panel" aria-label="复核筛选">
+      <label>检索用例<input id="review-keyword" type="search" placeholder="用例编号、名称或运行编号"></label>
+      <label>复核状态<select id="review-status"><option value="">全部状态</option><option value="PENDING">待复核</option><option value="CONFIRMED">已复核</option></select></label>
+      <label>系统观察<select id="review-observed"><option value="">全部观察结果</option><option value="PRODUCT_FAILURE">历史验收不一致</option><option value="ACCEPTANCE_MISMATCH">验收不一致</option><option value="AUTOMATION_FAILURE">自动化失败</option><option value="ENVIRONMENT_EXCEPTION">环境异常</option><option value="TEST_DATA_FAILURE">测试数据异常</option><option value="AI_REPAIR_SUCCESS">AI 修复后通过</option></select></label>
+      <label>QA 结论<select id="review-outcome"><option value="">全部结论</option><option value="PRODUCT_DEFECT">产品问题</option><option value="TEST_DATA_ISSUE">测试数据</option><option value="ORACLE_ISSUE">验收标准</option><option value="AUTOMATION_ISSUE">自动化问题</option><option value="ENVIRONMENT_ISSUE">环境问题</option><option value="NOT_AN_ISSUE">非问题</option><option value="REPAIR_VERIFIED">修复后通过</option></select></label>
+      <label>测试设备<select id="review-device"><option value="">全部设备</option></select></label>
+    </section>
+
+    <section class="review-layout">
+      <aside class="panel review-list-panel" aria-label="异常结果列表">
+        <div class="panel-heading"><div><span class="step-number">01</span><h3 id="review-list-title">最新未通过</h3></div><span id="review-count" class="badge muted">0 条</span></div>
+        <div id="review-list" class="review-list scroll-list"><p class="muted-copy">正在读取…</p></div>
+      </aside>
+
+      <article class="panel review-detail-panel" aria-labelledby="review-detail-title">
+        <div id="review-empty" class="review-empty"><span>✓</span><h3>选择一条异常结果</h3><p>查看系统观察、执行证据，并确认最终原因。</p></div>
+        <div id="review-detail" hidden>
+          <div class="review-detail-head">
+            <div><p class="eyebrow">REVIEW DETAIL</p><h2 id="review-detail-title">—</h2><p id="review-detail-meta">—</p></div>
+            <span id="review-detail-status" class="badge muted">待复核</span>
+          </div>
+          <div class="review-dual-result">
+            <section><small>系统观察</small><strong id="review-observed-label">—</strong><p id="review-message">—</p></section>
+            <section><small>QA 最终结论</small><strong id="review-outcome-label">待确认</strong><p id="review-note-summary">尚未填写复核备注</p></section>
+          </div>
+          <div class="review-context-grid">
+            <section><h3>测试上下文</h3><dl><dt>前置条件</dt><dd id="review-precondition">—</dd><dt>原始步骤</dt><dd id="review-source-steps">—</dd><dt>验收标准</dt><dd id="review-expected">—</dd></dl></section>
+            <section><h3>失败与验收明细</h3><div id="review-oracles" class="review-oracles"></div></section>
+          </div>
+          <section class="review-ai-section"><h3>AI 介入记录</h3><div id="review-ai-events"><p class="muted-copy">本次运行未发生 AI 介入</p></div></section>
+          <section class="review-evidence-section"><div class="section-title-row"><h3>执行证据</h3><div><a id="review-report-link" class="button ghost" href="#" target="_blank">原始报告</a> <a id="review-review-report-link" class="button secondary" href="#" target="_blank" hidden>复核报告</a></div></div><div id="review-evidence" class="review-evidence"></div></section>
+          <form id="review-form" class="review-form">
+            <div class="review-form-grid">
+              <label>最终分类<select name="review_outcome" required><option value="">请选择</option><option value="PRODUCT_DEFECT">已确认产品问题</option><option value="TEST_DATA_ISSUE">测试数据问题</option><option value="ORACLE_ISSUE">验收标准问题</option><option value="AUTOMATION_ISSUE">自动化问题</option><option value="ENVIRONMENT_ISSUE">环境问题</option><option value="NOT_AN_ISSUE">非问题</option><option value="REPAIR_VERIFIED">修复后通过</option></select></label>
+              <label>复核人<input name="reviewer" value="QA" maxlength="100" required></label>
+            </div>
+            <label>复核备注<textarea name="review_note" maxlength="2000" rows="3" placeholder="说明判断依据、需修复内容或非问题原因"></textarea></label>
+            <div class="review-actions"><button class="button primary" type="submit">确认复核</button><button id="review-analyze" class="button secondary" type="button">AI 分析并生成修复草稿</button><button id="review-rerun" class="button ghost" type="button">按原计划重跑</button></div>
+          </form>
+          <section class="review-rerun-section" aria-live="polite">
+            <h3>计划修复</h3>
+            <p class="muted-copy">可在复核备注中补充问题。AI 根据原用例和执行证据给出修改草稿；查看改动后点击验证，只有验证通过才启用新版本。</p>
+            <div id="review-repair-analysis"></div>
+            <div id="review-repair-candidates"></div>
+          </section>
+          <section class="review-rerun-section"><h3>复测链路</h3><div id="review-reruns"><p class="muted-copy">尚未发起复测</p></div></section>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script src="/static/reviews.js?v=demo-v1"></script>
+</body>
+</html>

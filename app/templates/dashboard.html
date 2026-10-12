@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>执行看板 · AI 自动化测试平台</title>
+  <link rel="stylesheet" href="/static/app.css?v=demo-v1">
+</head>
+<body>
+  {% set active_page = 'dashboard' %}{% include '_navigation.html' %}
+  <main class="shell" id="main-content">
+    <div class="run-toolbar"><div><p class="eyebrow">EXECUTION OVERVIEW</p><h1>执行与报告</h1></div><div class="run-toolbar-filters"><label for="device-picker">测试设备<select id="device-picker"><option value="">全部设备</option></select></label><label for="run-picker">查看历史运行<select id="run-picker"><option>正在读取运行记录…</option></select></label></div></div>
+    <section class="run-summary" aria-label="设备当前用例统计">
+      <button type="button" class="run-summary-card" data-run-filter="all" aria-pressed="true"><span class="summary-icon blue" aria-hidden="true">🗂️</span><span class="summary-copy"><small>设备用例数</small><strong id="summary-total" class="metric-loading" aria-busy="true">—</strong><span>按实际设备数据统计</span></span></button>
+      <button type="button" class="run-summary-card" data-run-filter="passed" aria-pressed="false"><span class="summary-icon teal" aria-hidden="true">✅</span><span class="summary-copy"><small>已通过</small><strong id="summary-passed" class="metric-loading" aria-busy="true">—</strong><span>资格执行已通过</span></span></button>
+      <button type="button" class="run-summary-card" data-run-filter="failed" aria-pressed="false"><span class="summary-icon rose" aria-hidden="true">🐞</span><span class="summary-copy"><small>未通过</small><strong id="summary-failed" class="metric-loading" aria-busy="true">—</strong><span>资格执行未通过</span></span></button>
+      <button type="button" class="run-summary-card" data-run-filter="blocked" aria-pressed="false"><span class="summary-icon amber" aria-hidden="true">⏸️</span><span class="summary-copy"><small>阻塞</small><strong id="summary-blocked" class="metric-loading" aria-busy="true">—</strong><span>环境或数据阻塞</span></span></button>
+      <button type="button" class="run-summary-card" data-run-filter="not-run" aria-pressed="false"><span class="summary-icon violet" aria-hidden="true">⏳</span><span class="summary-copy"><small>未执行</small><strong id="summary-not-run" class="metric-loading" aria-busy="true">—</strong><span>尚无资格执行结果</span></span></button>
+    </section>
+    <section id="execution-case-panel" class="panel execution-case-panel" hidden aria-live="polite">
+      <div class="section-title-row"><div><p class="eyebrow">CASE DETAILS</p><h2 id="execution-case-title">用例明细</h2></div><a id="execution-case-export" class="button secondary" href="/api/execution/cases.xlsx">导出 Excel</a></div>
+      <div id="execution-case-list" class="execution-case-list" tabindex="0" aria-label="用例明细，可上下滚动查看"></div>
+    </section>
+    <section class="hero compact run-result-hero">
+      <div class="run-result-head">
+        <div class="run-result-title"><div class="run-status-line"><span id="run-dot" class="status-dot amber"></span><span id="run-status" class="status-text">等待执行结果</span></div><h2>真机执行看板</h2></div>
+        <span id="report-status" class="note" aria-live="polite"></span>
+        <a id="report-link" class="button primary" href="#" hidden>打开完整中文报告</a>
+        <button id="report-retry" class="button" type="button" hidden>重试生成报告</button>
+      </div>
+      <div class="run-result-detail"><span class="run-detail-label">执行结果详情</span><p id="run-message" class="run-message-scroll" tabindex="0" aria-label="执行结果详情，可上下滚动查看">确认后的计划由 pytest 调度 Appium 执行，并在这里展示结果与证据。</p></div>
+      <div id="run-review-layer" class="run-review-layer" hidden><div><small>系统观察</small><strong id="run-observed-result">—</strong></div><div><small>QA 结论</small><strong id="run-qa-result">待确认</strong><span id="run-qa-note">尚未复核</span></div><a id="run-review-link" href="/reviews">进入复核</a></div>
+    </section>
+    <section class="metrics">
+      <article class="metric"><span>设备</span><strong id="device-name">等待设备</strong><small id="device-id">等待连接状态</small></article>
+      <article class="metric"><span>执行用例</span><strong id="case-id">—</strong><small>pytest 单任务串行</small></article>
+      <article class="metric"><span>执行路径</span><strong id="execution-path">Fast Path</strong><small>异常时进入 AI Repair</small></article>
+      <article class="metric"><span>结果分类</span><strong id="classification">—</strong><small id="finished-at">等待执行</small></article>
+    </section>
+    <section class="panel execution-layout"><div class="evidence-preview"><p class="eyebrow">DEVICE EVIDENCE</p><div class="device-frame"><div id="device-screen" class="device-screen">等待真机画面</div></div><p id="evidence-caption" class="muted-copy">点击步骤查看截图 · 历史执行证据</p></div><div class="timeline-wrap"><p class="eyebrow">EXECUTION TIMELINE</p><h3 id="timeline-title">尚未启动执行任务</h3><div id="timeline" class="timeline scroll-list" tabindex="0" aria-label="执行步骤，可上下滚动查看"><p class="muted-copy">确认后的计划才允许执行。</p></div></div></section>
+  </main>
+  <script src="/static/dashboard.js?v=demo-v1"></script>
+</body>
+</html>

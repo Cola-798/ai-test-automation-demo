@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>历史记录 · AI 自动化测试平台</title>
+  <link rel="stylesheet" href="/static/app.css?v=demo-v1">
+</head>
+<body>
+  {% set active_page = 'history' %}{% include '_navigation.html' %}
+  <main class="shell" id="main-content">
+    <section class="hero review-hero">
+      <div><p class="eyebrow">HISTORY</p><h1>历史失败记录</h1><p>这里保留每一次未通过运行。即使后来已经修复通过，原始结果和报告仍可追溯。</p></div>
+      <span id="history-summary" class="flow-chip">正在读取历史记录</span>
+    </section>
+    <section class="review-filter panel" aria-label="历史记录筛选">
+      <label>检索记录<input id="history-keyword" type="search" placeholder="用例编号、名称或运行编号"></label>
+      <label>测试设备<select id="history-device"><option value="">全部设备</option></select></label>
+    </section>
+    <section class="panel attempt-panel">
+      <div class="panel-heading"><div><span class="step-number">01</span><h3>全部历史失败</h3></div><span id="history-count" class="badge muted metric-loading" aria-busy="true">—</span></div>
+      <div class="attempt-table-wrap">
+        <table class="attempt-table">
+          <thead><tr><th>时间</th><th>用例</th><th>设备</th><th>来源</th><th>系统观察</th><th>报告</th></tr></thead>
+          <tbody id="history-list"><tr><td colspan="6" class="table-empty">正在读取…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="/static/history.js?v=demo-v1"></script>
+</body>
+</html>

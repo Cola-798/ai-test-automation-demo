@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 自动化测试平台</title>
+  <link rel="stylesheet" href="/static/app.css?v=demo-v1">
+</head>
+<body>
+  {% set active_page = 'workspace' %}{% include '_navigation.html' %}
+
+  <main class="shell" id="main-content">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">TEST WORKSPACE</p>
+        <h1>让每一次测试，都有迹可循。</h1>
+        <p>导入用例、审核 AI 计划，让真机完成执行与验收。</p>
+      </div>
+      <div class="flow-chip">{{ 'AI 解析已配置' if compiler_mode in ['OpenAICompatibleCompiler', 'ResilientPlanCompiler'] else '规则模板模式' }}</div>
+    </section>
+    <ol class="workflow" aria-label="测试流程">
+      <li class="current" id="flow-import"><span class="flow-number">01</span><span class="flow-icon blue" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M10 12h5M10 16h5"/></svg></span><strong>导入用例</strong></li>
+      <li id="flow-plan"><span class="flow-number">02</span><span class="flow-icon teal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z"/></svg></span><strong>生成计划</strong></li>
+      <li id="flow-confirm"><span class="flow-number">03</span><span class="flow-icon violet" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4L19 6.5"/></svg></span><strong>审核确认</strong></li>
+      <li id="flow-execute"><span class="flow-number">04</span><span class="flow-icon amber" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7M4 20h16"/></svg></span><strong>执行与报告</strong></li>
+    </ol>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="panel model-config-panel" aria-labelledby="model-config-title">
+      <div class="panel-heading">
+        <div><span class="step-number">AI</span><h3 id="model-config-title">模型职责与连接状态</h3></div>
+        <span id="model-config-summary" class="badge muted">正在读取</span>
+      </div>
+      <div class="model-role-grid">
+        <article class="model-role-card">
+          <div><span class="model-role-label">用例解析</span><strong id="plan-model-name">尚未选择模型</strong><small id="plan-model-status">TestAI 中转站 · 等待自动识别</small></div>
+          <button id="auto-model-button" class="button secondary" type="button">自动发现并测试</button>
+        </article>
+        <article class="model-role-card">
+          <div><span class="model-role-label">视觉兜底</span><strong id="vision-model-name">正在读取</strong><small id="vision-model-status">阿里百炼官方渠道 · 仅定位失败时调用</small></div>
+          <span id="vision-model-badge" class="badge muted">检查中</span>
+        </article>
+      </div>
+      <div id="model-probe-results" class="model-probe-results" hidden></div>
+    </section>
+
+    <section class="workspace-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div><span class="step-number">01</span><h3>导入测试用例</h3></div>
+          <span class="badge">XLSX</span>
+        </div>
+        <form id="upload-form" class="upload-box">
+          <label for="workbook">选择测试用例文件</label>
+          <p class="upload-hint">上传 Excel，开始一次有据可查的测试</p>
+          <input id="workbook" name="file" type="file" accept=".xlsx" required>
+          <button class="button primary" type="submit">读取用例</button>
+        </form>
+        <div class="list-tools"><label for="case-search">用例列表 <span id="case-count" class="badge muted">0</span></label><input id="case-search" type="search" placeholder="搜索编号或用例名称" disabled></div>
+        <div id="case-list" class="case-list empty-state">尚未导入用例</div>
+      </article>
+
+      <article class="panel plan-panel">
+        <div class="panel-heading">
+          <div><span class="step-number">02</span><h3>AI 解析与 QA 确认</h3></div>
+          <span id="validation-badge" class="badge muted">等待计划</span>
+        </div>
+        <div class="toolbar">
+          <button id="compile-button" class="button secondary" type="button" disabled>生成执行计划</button>
+          <label class="qa-field">确认人<input id="qa-name" value="QA" maxlength="100"></label>
+          <button id="save-button" class="button ghost" type="button" disabled>保存草稿</button>
+          <button id="confirm-button" class="button primary" type="button" disabled>确认计划</button>
+        </div>
+        <div id="plan-preview" class="plan-preview empty-state"><div><span class="empty-glyph" aria-hidden="true">✦</span><strong>先选择一条测试用例</strong><p>AI 将整理操作步骤与验收标准，供你审核。</p></div></div>
+        <details class="code-details"><summary>查看与编辑执行计划 JSON <span>高级编辑</span></summary>
+        <label class="editor-label" for="plan-editor">执行计划原始数据</label>
+        <textarea id="plan-editor" class="code-editor" spellcheck="false" placeholder="选择用例并生成计划后，可在这里审核和修改"></textarea>
+        </details>
+        <div id="validation-list" class="validation-list"></div>
+      </article>
+    </section>
+
+    <section class="panel saved-panel">
+      <div class="panel-heading">
+        <div><span class="step-number">03</span><h3>可执行计划</h3><span class="badge muted">每条用例仅显示最新版本</span></div>
+        <div class="saved-actions"><label for="execution-platform">执行平台<select id="execution-platform"><option value="android">Android</option></select></label><label for="execution-device">执行设备<select id="execution-device" disabled><option value="">正在检测…</option></select></label><button id="refresh-button" class="button ghost" type="button">刷新</button></div>
+      </div>
+      <p id="platform-readiness" class="platform-readiness">正在读取设备平台配置…</p>
+      <div class="saved-filter-bar" aria-label="已保存计划筛选">
+        <label class="saved-search" for="saved-plan-search"><span>检索计划</span><input id="saved-plan-search" type="search" placeholder="搜索编号或用例名称" autocomplete="off"></label>
+        <label for="saved-plan-category"><span>用例分类</span><select id="saved-plan-category"><option value="">全部分类</option></select></label>
+        <div class="saved-filter-count">
+          <span>筛选结果</span>
+          <strong id="saved-plan-count" class="metric-loading" aria-live="polite" aria-busy="true">—</strong>
+        </div>
+      </div>
+      <div id="saved-plans" class="saved-plans empty-state">暂无计划</div>
+    </section>
+  </main>
+  <script src="/static/app.js?v=demo-v1"></script>
+</body>
+</html>

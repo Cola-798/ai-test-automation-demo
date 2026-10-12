@@ -1,0 +1,18 @@
+<a class="skip-link" href="#main-content">跳到主要内容</a>
+<aside class="sidebar">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">AI<span></span></span><span>AI 自动化测试平台<small>移动端测试工作台</small></span></a>
+  <div class="workspace-label"><span class="workspace-icon" aria-hidden="true">M</span><span>移动应用<small>本地测试空间</small></span><span class="badge muted">DEMO</span></div>
+  <p class="nav-caption">测试工作空间</p>
+  <nav aria-label="主导航">
+    <a class="nav-link {{ 'active' if active_page == 'collection' else '' }}" href="/collection" {% if active_page == 'collection' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>信息采集</a>
+    <a class="nav-link {{ 'active' if active_page == 'workspace' else '' }}" href="/" {% if active_page == 'workspace' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>用例与计划</a>
+    <a class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}" href="/dashboard" {% if active_page == 'dashboard' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 21v-7m4 7v-4m4 4V11"/></svg>执行与报告</a>
+    <a class="nav-link {{ 'active' if active_page == 'stability' else '' }}" href="/stability" {% if active_page == 'stability' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/><path d="M3 19h18"/></svg>稳定性验证</a>
+    <a class="nav-link {{ 'active' if active_page == 'reviews' else '' }}" href="/reviews" {% if active_page == 'reviews' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 8h6M9 12h4"/><path d="M9 16l2 2 4-5"/></svg>结果复核</a>
+    <a class="nav-link {{ 'active' if active_page == 'history' else '' }}" href="/history" {% if active_page == 'history' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>历史记录</a>
+    <a class="nav-link {{ 'active' if active_page == 'models' else '' }}" href="/models" {% if active_page == 'models' %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg>模型配置</a>
+  </nav>
+  <div class="sidebar-note"><span class="note-icon" aria-hidden="true">✦</span><strong>AI 辅助，标准由你掌握</strong><p>审核执行计划，再交给真机测试。每一步都有据可查。</p></div>
+  <div class="sidebar-footer"><span class="avatar">QA</span><span>测试工作空间<small>本机运行 · 移动设备</small></span></div>
+</aside>
+<header class="topbar"><span>工作空间 <span class="breadcrumb-divider">/</span> <strong>{% if active_page == 'workspace' %}用例与计划{% elif active_page == 'collection' %}信息采集{% elif active_page == 'models' %}模型配置{% elif active_page == 'stability' %}稳定性验证{% elif active_page == 'reviews' %}结果复核{% elif active_page == 'history' %}历史记录{% else %}执行与报告{% endif %}</strong></span><span class="local-label"><span class="local-dot"></span>本地 Demo</span></header>

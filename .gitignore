@@ -1,0 +1,37 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node and browser tooling
+node_modules/
+.playwright-cli/
+
+# Runtime data and generated evidence
+runtime-data/
+runtime-data-experiments/
+runtime-data*/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.xlsx
+*.xls
+*.xml
+*.har
+*.log
+
+# Local credentials and environment overrides
+.env
+.env.*
+model.txt
+model-settings.json
+model-selection.json
+locator_catalog.json
+
+# Editors and operating system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

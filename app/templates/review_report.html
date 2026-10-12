@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ detail.review.case_id }} 复核报告</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--line:#dfe4ee;--text:#1d2638;--muted:#66748b;--blue:#5664cb;--green:#19765b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.65 "Microsoft YaHei",system-ui,sans-serif}.wrap{width:min(1050px,92vw);margin:36px auto 64px}.hero,.card{padding:22px;border:1px solid var(--line);border-radius:11px;background:var(--card);box-shadow:0 4px 18px #24345608}.hero{border-top:4px solid var(--blue)}.eyebrow{color:var(--blue);font-size:10px;letter-spacing:.16em}.hero h1{margin:7px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}.card h2{margin:0 0 10px;font-size:16px}.card small{display:block;color:var(--muted)}.card strong{display:block;margin:6px 0;font-size:18px}.note{white-space:pre-wrap;color:#526077}.context{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.context .card{min-height:130px}.rerun{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}a{color:var(--blue)}@media(max-width:720px){.grid,.context{grid-template-columns:1fr}}
+  </style>
+</head>
+<body><main class="wrap">
+  <section class="hero"><div class="eyebrow">QA RESULT REVIEW REPORT</div><h1>{{ detail.review.case_id }} · {{ detail.review.case_title }}</h1><p>原始运行 {{ detail.review.run_id }}；复核结果独立保存，未覆盖原始执行证据。</p></section>
+  <section class="grid">
+    <article class="card"><small>系统观察</small><strong>{{ detail.review.observed_label }}</strong><p class="note">{{ detail.result.message }}</p></article>
+    <article class="card"><small>QA 最终结论</small><strong>{{ detail.review.review_outcome_label }}</strong><p class="note">{{ detail.review.review_note or '未填写备注' }}</p><small>复核人：{{ detail.review.reviewer or '—' }}</small><code style="display:none">{{ detail.review.review_outcome }}</code></article>
+  </section>
+  <section class="context">
+    <article class="card"><h2>前置条件</h2><p class="note">{{ detail.source_case.precondition or '未填写' }}</p></article>
+    <article class="card"><h2>原始步骤</h2><p class="note">{{ detail.source_case.steps or '未填写' }}</p></article>
+    <article class="card"><h2>验收标准</h2><p class="note">{{ detail.source_case.expected or '未填写' }}</p></article>
+  </section>
+  <section class="card" style="margin-top:14px"><h2>复测链路</h2>{% if detail.reruns %}{% for item in detail.reruns %}<div class="rerun"><span>{{ item.run_id }} · {{ item.classification }}</span>{% if item.report_url %}<a href="{{ item.report_url }}">查看复测报告</a>{% endif %}</div>{% endfor %}{% else %}<p class="note">尚未发起修复后复测</p>{% endif %}<p><a href="{{ detail.report_url }}">打开原始中文执行报告</a></p></section>
+</main></body></html>

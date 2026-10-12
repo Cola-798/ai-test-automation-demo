@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>模型配置 · AI 自动化测试平台</title>
+  <link rel="stylesheet" href="/static/app.css?v=demo-v1">
+</head>
+<body>
+  {% set active_page = 'models' %}{% include '_navigation.html' %}
+  <main class="shell model-workbench" id="main-content">
+    <section class="hero">
+      <div><p class="eyebrow">MODEL WORKBENCH</p><h1>为每种职责，选择合适的模型。</h1><p>用例解析与视觉兜底完全独立配置。API Key 由 Windows 当前用户加密保存，页面不会回显。</p></div>
+      <div id="workbench-summary" class="flow-chip">正在读取配置</div>
+    </section>
+    <div id="model-notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="model-workbench-grid">
+      <form class="panel model-editor" data-role="plan" autocomplete="off">
+        <div class="model-editor-header"><div><span class="model-role-index">01</span><p class="eyebrow">BEFORE RUNTIME</p><h2>用例解析模型</h2><p>读取自然语言测试用例，生成结构化执行计划与验收规则。</p></div><span class="badge muted" data-field="status">未配置</span></div>
+        <label>中转站 Base URL<input name="base_url" type="url" placeholder="https://example.com/v1" required></label>
+        <label>API Key<span class="field-hint" data-field="key_hint">保存后不会回显</span><div class="secret-field"><input name="api_key" type="password" placeholder="输入新密钥，留空则保留原密钥"><button class="secret-toggle" type="button" aria-label="显示或隐藏 API Key">显示</button></div></label>
+        <div class="model-select-row"><label>选择模型<select name="model_choice" aria-label="选择用例解析模型" required><option value="">请先发现模型</option></select></label><button class="button ghost discover-button" type="button">发现模型</button></div>
+        <div class="model-manual-row"><button class="manual-model-button" type="button">没有找到？手动输入模型名</button><label data-field="manual_model" hidden>自定义模型名<input name="custom_model" placeholder="例如 gpt-5.5"></label></div>
+        <div class="capability-line"><span>能力要求</span><b>中文理解</b><b>结构化 JSON</b><b>Schema 遵循</b></div>
+        <div class="model-actions"><button class="button secondary probe-button" type="button">测试解析能力</button><button class="button primary save-model-button" type="submit">保存解析配置</button></div>
+        <div class="probe-feedback" data-field="probe" hidden></div>
+      </form>
+
+      <form class="panel model-editor" data-role="vision" autocomplete="off">
+        <div class="model-editor-header"><div><span class="model-role-index violet">02</span><p class="eyebrow">AI SLOW PATH</p><h2>视觉兜底模型</h2><p>仅在 Appium 常规定位失败时接收截图，返回候选坐标与置信度。</p></div><span class="badge muted" data-field="status">未配置</span></div>
+        <label>视觉模型 Base URL<input name="base_url" type="url" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1" required></label>
+        <label>API Key<span class="field-hint" data-field="key_hint">保存后不会回显</span><div class="secret-field"><input name="api_key" type="password" placeholder="输入新密钥，留空则保留原密钥"><button class="secret-toggle" type="button" aria-label="显示或隐藏 API Key">显示</button></div></label>
+        <div class="model-select-row"><label>选择模型<select name="model_choice" aria-label="选择视觉兜底模型" required><option value="">请先发现模型</option></select></label><button class="button ghost discover-button" type="button">发现模型</button></div>
+        <div class="model-manual-row"><button class="manual-model-button" type="button">没有找到？手动输入模型名</button><label data-field="manual_model" hidden>自定义模型名<input name="custom_model" placeholder="例如 qwen3-vl-flash"></label></div>
+        <div class="capability-line"><span>能力要求</span><b>图片输入</b><b>目标定位</b><b>JSON 坐标</b></div>
+        <div class="model-actions"><button class="button secondary probe-button" type="button">测试视觉能力</button><button class="button primary save-model-button" type="submit">保存视觉配置</button></div>
+        <div class="probe-feedback" data-field="probe" hidden></div>
+      </form>
+    </section>
+
+    <section class="panel security-note"><div class="security-icon" aria-hidden="true">✓</div><div><strong>密钥安全边界</strong><p>API Key 只发送到你填写的模型地址，并使用 Windows DPAPI 加密保存在本机运行数据目录。状态接口、页面和测试报告只显示“已配置”，不会返回密钥内容。</p></div></section>
+  </main>
+  <script src="/static/models.js?v=demo-v1"></script>
+</body>
+</html>
